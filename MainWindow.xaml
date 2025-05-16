@@ -6,7 +6,46 @@
         xmlns:local="clr-namespace:DatRepacker"
         mc:Ignorable="d"
         Title="Dat Repacker" Height="450" Width="800">
-    <Grid>
-
-    </Grid>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Name="OpenBtn" Header="_Open file" Command="Open" InputGestureText="Ctrl+O"/>
+                <MenuItem Name="CloseBtn" Header="_Close file" IsEnabled="False" Command="Close" InputGestureText="Ctrl+W"/>
+                <MenuItem Name="SaveBtn" Header="_Save" IsEnabled="False" Command="Save" InputGestureText="Ctrl+S"/>
+                <MenuItem Name="SaveAsBtn" Header="Save as..." IsEnabled="False" Command="SaveAs" InputGestureText="Ctrl+Shift+S"/>
+                <Separator/>
+                <MenuItem Name="ExitBtn" Header="_Exit" Click="Exit_Click"/>
+            </MenuItem>
+            <MenuItem Header="_View">
+                <MenuItem Name="Toggle255" Header="0 to 255 scale" IsCheckable="True" Checked="Toggle255_Checked" Unchecked="Toggle255_Checked"></MenuItem>
+            </MenuItem>
+            <MenuItem x:Name="AboutBtn" Header="About" Click="AboutBtn_Click"/>
+        </Menu>
+        <DockPanel>
+            <StackPanel>
+                <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="10,10,10,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <ListBox x:Name="ItemList" Height="200" Grid.Column="0" Grid.Row="0">
+                        
+                    </ListBox>
+                    <Grid Grid.Column="0" Grid.Row="1" Height="30">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="1*" />
+                        </Grid.ColumnDefinitions>
+                        <Button Margin="0,2,0,2" Grid.Column="0"/>
+                        <Button Margin="0,2,0,2" Grid.Column="1"/>
+                    </Grid>
+                </Grid>
+            </StackPanel>
+        </DockPanel>
+    </DockPanel>
 </Window>
