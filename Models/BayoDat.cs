@@ -4,11 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DatRepacker
+namespace DatRepacker.Models
 {
+    enum Globals : UInt16
+    {
+        HEADER_SIZE = 28
+    }
+
     public class DatHeader
     {
-        public sbyte[] id { get; private set; }
+        public char[] id { get; private set; }
         public uint fileNumber { get; private set; }
         public uint fileOffsetsOffset { get; private set; } // The offset to where the file offsets start. An address that points to more addresses
         public uint fileExtensionOffset { get; private set; }
@@ -25,7 +30,7 @@ namespace DatRepacker
         /// <param name="fileNamesOffset">The pointer to where the file names are</param>
         /// <param name="fileSizesOffset">The pointer to where the file sizes are</param>
         /// <param name="hashMapOffset">Usually 0</param>
-        public DatHeader(sbyte[] id, uint fileNumber, uint fileOffsetsOffset, uint fileExtensionOffset, uint fileNamesOffset, uint fileSizesOffset, uint hashMapOffset)
+        public DatHeader(char[] id, uint fileNumber, uint fileOffsetsOffset, uint fileExtensionOffset, uint fileNamesOffset, uint fileSizesOffset, uint hashMapOffset)
         {
             this.id = id;
             this.fileNumber = fileNumber;
@@ -44,7 +49,7 @@ namespace DatRepacker
         /// <param name="fileOffsetsOffset">The pointer to where the file pointers are</param>
         /// <param name="fileNamesOffset">The pointer to where the file names are</param>
         /// <param name="fileSizesOffset">The pointer to where the file sizes are</param>
-        public DatHeader(sbyte[] id, uint fileNumber, uint fileOffsetsOffset, uint fileExtensionOffset, uint fileNamesOffset, uint fileSizesOffset)
+        public DatHeader(char[] id, uint fileNumber, uint fileOffsetsOffset, uint fileExtensionOffset, uint fileNamesOffset, uint fileSizesOffset)
         {
             this.id = id;
             this.fileNumber = fileNumber;
@@ -55,62 +60,91 @@ namespace DatRepacker
             hashMapOffset = 0;
         }
 
-        public void SetId(sbyte[] id) { this.id = id; }
+        public void SetId(char[] id) { this.id = id; }
 
         public void SetFileNumber(uint fileNumber) { this.fileNumber = fileNumber; }
 
-        public void SetFileOffsetOffsets(uint offset) { this.fileOffsetsOffset = offset; }
+        public void SetFileOffsetOffsets(uint offset) { fileOffsetsOffset = offset; }
 
-        public void SetFileExtensionOffsets(uint offset) { this.fileExtensionOffset = offset; }
+        public void SetFileExtensionOffsets(uint offset) { fileExtensionOffset = offset; }
 
-        public void SetFileNamesOffset(uint offset) { this.fileNamesOffset = offset; }
+        public void SetFileNamesOffset(uint offset) { fileNamesOffset = offset; }
 
-        public void SetFileSizesOffset(uint offset) { this.fileSizesOffset = offset; }
+        public void SetFileSizesOffset(uint offset) { fileSizesOffset = offset; }
 
-        public void SetHashMapOffset(uint offset) { this.hashMapOffset = offset; }
+        public void SetHashMapOffset(uint offset) { hashMapOffset = offset; }
     }
 
     public class BayoDat
     {
         private DatHeader header;
         private List<uint> fileOffsets;
-        private List<sbyte[]> fileExtensions;
+        private List<char[]> fileExtensions;
         private uint nameLength;
-        private List<List<sbyte>> fileNames;
+        private List<List<char>> fileNames;
         private List<uint> fileSizes;
         private List<byte[]> files;
+        public bool bigEndian { private set; get; }
 
-        public BayoDat(DatHeader header, uint nameLength)
+        public BayoDat(DatHeader header, uint nameLength, bool bigEndian)
         {
             this.header = header;
-            fileOffsets = new List<uint>();
-            fileOffsets.Capacity = (int)header.fileNumber;
-            fileExtensions = new List<sbyte[]>();
-            fileExtensions.Capacity = (int)header.fileNumber;
+            fileOffsets = new List<uint>
+            {
+                Capacity = (int)header.fileNumber
+            };
+            fileExtensions = new List<char[]>
+            {
+                Capacity = (int)header.fileNumber
+            };
             this.nameLength = nameLength;
-            fileNames = new List<List<sbyte>>();
-            fileNames.Capacity = (int)header.fileNumber;
-            fileSizes = new List<uint>();
-            fileSizes.Capacity = (int)header.fileNumber;
-            files = new List<byte[]>();
-            files.Capacity = (int)header.fileNumber;
+            fileNames = new List<List<char>>
+            {
+                Capacity = (int)header.fileNumber
+            };
+            fileSizes = new List<uint>
+            {
+                Capacity = (int)header.fileNumber
+            };
+            files = new List<byte[]>
+            {
+                Capacity = (int)header.fileNumber
+            };
+            this.bigEndian = bigEndian;
         }
 
-        public BayoDat(sbyte[] id, uint fileNumber, uint fileOffsetsOffset, uint fileExtensionOffset, uint fileNamesOffset, uint fileSizesOffset, uint hashMapOffset, uint nameLength)
+        public BayoDat(char[] id, uint fileNumber, uint fileOffsetsOffset, uint fileExtensionOffset, uint fileNamesOffset, uint fileSizesOffset, uint hashMapOffset, uint nameLength, bool bigEndian)
         {
             header = new DatHeader(id, fileNumber, fileOffsetsOffset, fileExtensionOffset, fileNamesOffset, fileSizesOffset, hashMapOffset);
-            fileOffsets = new List<uint>();
-            fileOffsets.Capacity = (int)header.fileNumber;
-            fileExtensions = new List<sbyte[]>();
-            fileExtensions.Capacity = (int)header.fileNumber;
+            fileOffsets = new List<uint>
+            {
+                Capacity = (int)header.fileNumber
+            };
+            fileExtensions = new List<char[]>
+            {
+                Capacity = (int)header.fileNumber
+            };
             this.nameLength = nameLength;
-            fileNames = new List<List<sbyte>>();
-            fileNames.Capacity = (int)header.fileNumber;
-            fileSizes = new List<uint>();
-            fileSizes.Capacity = (int)header.fileNumber;
-            files = new List<byte[]>();
-            files.Capacity = (int)header.fileNumber;
+            fileNames = new List<List<char>>
+            {
+                Capacity = (int)header.fileNumber
+            };
+            fileSizes = new List<uint>
+            {
+                Capacity = (int)header.fileNumber
+            };
+            files = new List<byte[]>
+            {
+                Capacity = (int)header.fileNumber
+            };
+            this.bigEndian = bigEndian;
         }
+
+        /// <summary>
+        /// Get the Dat file header
+        /// </summary>
+        /// <returns></returns>
+        public DatHeader GetHeader() { return header; }
 
         /// <summary>
         /// Add the file's information inside the lists of the Dat
@@ -120,7 +154,7 @@ namespace DatRepacker
         public void AddFile(string fileName, byte[] fileData)
         {
             // Add file name
-            byte[] nameBytes = Encoding.UTF8.GetBytes(fileName);
+            char[] nameBytes = fileName.ToCharArray();
             AddFile(nameBytes, fileData);
         }
 
@@ -129,19 +163,22 @@ namespace DatRepacker
         /// </summary>
         /// <param name="fileName">Assumed to be a proper name ending in an extension</param>
         /// <param name="fileData"></param>
-        public void AddFile(byte[] fileName, byte[] fileData)
+        public void AddFile(char[] fileName, byte[] fileData)
         {
+            int i;
             // Add file name
-            List<sbyte> nameSBytes = new List<sbyte>(Array.ConvertAll(fileName, b => unchecked((sbyte)b)));
-            nameSBytes.Capacity = (int)nameLength;
+            List<char> nameSBytes = new List<char>(fileName)
+            {
+                Capacity = (int)nameLength
+            };
             fileNames.Add(nameSBytes);
             // Add file extension
-            sbyte[] extBytes =
+            char[] extBytes =
             [
-                (sbyte)fileName[fileName.Length - 3],
-                (sbyte)fileName[fileName.Length - 2],
-                (sbyte)fileName[fileName.Length - 1],
-                0,
+                fileName[fileName.Length - 3],
+                fileName[fileName.Length - 2],
+                fileName[fileName.Length - 1],
+                Convert.ToChar(0),
             ];
             fileExtensions.Add(extBytes);
             // Add file size
@@ -153,36 +190,18 @@ namespace DatRepacker
             header.SetFileExtensionOffsets(header.fileExtensionOffset + 4);
             header.SetFileNamesOffset(header.fileNamesOffset + 8);
             header.SetFileSizesOffset(header.fileSizesOffset + 12);
-        }
-
-        /// <summary>
-        /// Add the file's information inside the lists of the Dat
-        /// </summary>
-        /// <param name="fileName">Assumed to be a proper name ending in an extension</param>
-        /// <param name="fileData"></param>
-        public void AddFile(sbyte[] fileName, byte[] fileData)
-        {
-            List<sbyte> nameSBytes = new List<sbyte>(fileName);
-            nameSBytes.Capacity = (int)nameLength;
-            fileNames.Add(nameSBytes);
-            // Add file extension
-            sbyte[] extBytes =
-            [
-                (sbyte)fileName[fileName.Length - 3],
-                (sbyte)fileName[fileName.Length - 2],
-                (sbyte)fileName[fileName.Length - 1],
-                0,
-            ];
-            fileExtensions.Add(extBytes);
-            // Add file size
-            fileSizes.Add((uint)fileData.Length);
-            // Add file data
-            files.Add(fileData);
-            // Adjust count and offsets
-            header.SetFileNumber(header.fileNumber + 1);
-            header.SetFileExtensionOffsets(header.fileExtensionOffset + 4);
-            header.SetFileNamesOffset(header.fileNamesOffset + 8);
-            header.SetFileSizesOffset(header.fileSizesOffset + 12);
+            if (fileOffsets.Count > 0)
+            {
+                for ( i = 0; i < fileOffsets.Count; i++)
+                {
+                    fileOffsets[i] = fileOffsets[i] + 16;
+                }
+                fileOffsets.Add(fileOffsets[i-1] + fileSizes[i-1]);
+            }
+            else
+            {
+                fileOffsets.Add(header.fileSizesOffset + 4);
+            }
         }
 
         /// <summary>
@@ -214,6 +233,24 @@ namespace DatRepacker
         }
 
         /// <summary>
+        /// Load prepared content data into the Dat. Overrides any present information
+        /// </summary>
+        /// <param name="fileOffsets"></param>
+        /// <param name="fileExtensions"></param>
+        /// <param name="fileNames"></param>
+        /// <param name="fileSizes"></param>
+        /// <param name="files"></param>
+        public void LoadContents(List<uint> fileOffsets, List<char[]> fileExtensions, List<List<char>> fileNames, List<uint> fileSizes, List<byte[]> files, uint nameLength)
+        {
+            this.fileOffsets = fileOffsets;
+            this.fileExtensions = fileExtensions;
+            this.fileNames = fileNames;
+            this.fileSizes = fileSizes;
+            this.files = files;
+            this.nameLength = nameLength;
+        }
+
+        /// <summary>
         /// Get the total amount of files stored
         /// </summary>
         /// <returns></returns>
@@ -226,7 +263,7 @@ namespace DatRepacker
         /// Get a tuple of lists containing the names and sizes of the files
         /// </summary>
         /// <returns></returns>
-        public (List<List<sbyte>> names, List<uint> sizes) GetFilesInfo()
+        public (List<List<char>> names, List<uint> sizes) GetFilesInfo()
         {
             return (fileNames, fileSizes);
         }
@@ -235,7 +272,7 @@ namespace DatRepacker
         /// Get a tuple of lists containing the names, sizes and data of the files
         /// </summary>
         /// <returns></returns>
-        public (List<List<sbyte>> names, List<uint> sizes, List<byte[]> data) GetFiles()
+        public (List<List<char>> names, List<uint> sizes, List<byte[]> data) GetFiles()
         {
             return (fileNames, fileSizes, files);
         }

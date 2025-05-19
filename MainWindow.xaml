@@ -6,18 +6,25 @@
         xmlns:local="clr-namespace:DatRepacker"
         mc:Ignorable="d"
         Title="Dat Repacker" Height="450" Width="800">
+    <Window.CommandBindings>
+        <CommandBinding Command="Open" Executed="OpenCommandBinding_Executed"/>
+        <CommandBinding Command="{x:Static local:CustomCommands.OpenFolder}" Executed="OpenFolderCommandBinding_Executed" />
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Key="O" Modifiers="Ctrl" Command="Open"/>
+    </Window.InputBindings>
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_File">
                 <MenuItem Name="OpenBtn" Header="_Open file" Command="Open" InputGestureText="Ctrl+O"/>
-                <MenuItem Name="CloseBtn" Header="_Close file" IsEnabled="False" Command="Close" InputGestureText="Ctrl+W"/>
-                <MenuItem Name="SaveBtn" Header="_Save" IsEnabled="False" Command="Save" InputGestureText="Ctrl+S"/>
-                <MenuItem Name="SaveAsBtn" Header="Save as..." IsEnabled="False" Command="SaveAs" InputGestureText="Ctrl+Shift+S"/>
+                <MenuItem Name="CloseBtn" Header="_Close file" IsEnabled="False" InputGestureText="Ctrl+W"/>
+                <MenuItem Name="SaveBtn" Header="_Save" IsEnabled="False" InputGestureText="Ctrl+S"/>
+                <MenuItem Name="SaveAsBtn" Header="Save as..." IsEnabled="False" InputGestureText="Ctrl+Shift+S"/>
                 <Separator/>
                 <MenuItem Name="ExitBtn" Header="_Exit" Click="Exit_Click"/>
             </MenuItem>
             <MenuItem Header="_View">
-                <MenuItem Name="Toggle255" Header="0 to 255 scale" IsCheckable="True" Checked="Toggle255_Checked" Unchecked="Toggle255_Checked"></MenuItem>
+                <MenuItem Name="Toggle255" Header="0 to 255 scale" IsCheckable="True"></MenuItem>
             </MenuItem>
             <MenuItem x:Name="AboutBtn" Header="About" Click="AboutBtn_Click"/>
         </Menu>
@@ -33,16 +40,18 @@
                         <RowDefinition Height="1*"/>
                         <RowDefinition Height="1*"/>
                     </Grid.RowDefinitions>
-                    <ListBox x:Name="ItemList" Height="200" Grid.Column="0" Grid.Row="0">
+                    <ListBox x:Name="ItemList" Height="200" Grid.Column="0" Grid.Row="0" ItemsSource="{Binding Path=_appState.modContainers}">
                         
                     </ListBox>
                     <Grid Grid.Column="0" Grid.Row="1" Height="30">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="1*" />
                             <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="1*" />
                         </Grid.ColumnDefinitions>
-                        <Button Margin="0,2,0,2" Grid.Column="0"/>
-                        <Button Margin="0,2,0,2" Grid.Column="1"/>
+                        <Button Margin="0,2,0,2" Grid.Column="0" Command="Open" ToolTip="Add file" Background="LightGreen"/>
+                        <Button Margin="0,2,0,2" Grid.Column="1" Command="{x:Static local:CustomCommands.OpenFolder}" ToolTip="Add folder" Background="LightGreen"/>
+                        <Button Margin="2,2,0,2" Grid.Column="2" ToolTip="Remove selected" Background="Red" IsEnabled="False"/>
                     </Grid>
                 </Grid>
             </StackPanel>
